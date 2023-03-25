@@ -27,21 +27,9 @@ class FolderManager:
     def move_to_folder(self, old_location, new_location):
         shutil.move(old_location, new_location)
 
-
-class AllFolder(FolderManager):
-
-    image_directory = None
-    image_year = None
-    image_month = None
-
-    def manage_folders(self):
-        self.new_location = FolderManager.create_month_folder(AllFolder.image_year, AllFolder.image_month)
-        FolderManager.move_to_folder(AllFolder.image_directory, self.new_location)
-
-    def create_all_shortcut(self):
-        self.manage_folders()
-        shortcut_path = f'{CURRENT_DIRECTORY}\\All'
+    def create_all_shortcut(self, image_new_directory):
+        shortcut_path = f'{CURRENT_DIRECTORY}\\Organizer\\All'
         shell = Dispatch('WScript.Shell')
         shortcut = shell.CreateShortCut(shortcut_path)
-        shortcut.TargetPath = self.new_location
+        shortcut.TargetPath = image_new_directory
         shortcut.save()
