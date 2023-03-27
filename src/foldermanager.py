@@ -28,12 +28,18 @@ class FolderManager:
         return str(month_directory)
 
     @staticmethod
+    def create_all_folder() -> None:
+        all_path = Path(ORGANIZER_DIRECTORY)
+        all_path.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
     def move_to_folder(old_image_path: str, new_image_path: str) -> None:
         shutil.move(old_image_path, new_image_path)
 
     @staticmethod
-    def create_all_shortcut(new_image_path: str) -> None:
-        shortcut_path = Path(ORGANIZER_DIRECTORY)
+    def create_all_shortcut(image_name, old_image_path, new_image_path: str) -> None:
+        shortcut_path = Path(ORGANIZER_DIRECTORY, f'{image_name}.lnk')
+        file_name = old_image_path.name
         shortcut = win32.Dispatch('WScript.Shell').CreateShortCut(str(shortcut_path))
-        shortcut.TargetPath = str(new_image_path)
+        shortcut.TargetPath = str(Path(new_image_path, file_name))
         shortcut.save()

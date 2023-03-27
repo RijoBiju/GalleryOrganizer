@@ -24,6 +24,7 @@ class MediaOrganizer:
     def __init__(self, folder_manager):
         self.folder_manager = folder_manager
         self._image_path: str = ''
+        self._image_name: str = ''
 
     @property
     def image_path(self):
@@ -32,6 +33,7 @@ class MediaOrganizer:
     @image_path.setter
     def image_path(self, path):
         self._image_path = path
+        self._image_name = path.stem
 
     def get_image_metadata(self) -> Dict:
         try:
@@ -63,6 +65,6 @@ class MediaOrganizer:
             img_month: str = MediaOrganizer.months[self.get_image_month(img_datetime)]
             new_image_path: str = self.folder_manager.create_folder_by_month(img_year, img_month)
             self.folder_manager.move_to_folder(self._image_path, new_image_path)
-            # self.folder_manager.create_all_shortcut(new_image_path)
+            self.folder_manager.create_all_shortcut(self._image_name, self._image_path, new_image_path)
         except (KeyError, IndexError):
             print("Invalid input data. Check input dictionary")
