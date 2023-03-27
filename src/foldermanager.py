@@ -1,35 +1,39 @@
-import os
 import shutil
-import winshell
-from win32com.client import Dispatch
+import win32com.client as win32
+from pathlib import Path
 
-CURRENT_DIRECTORY = os.getcwd()
+CURRENT_DIRECTORY = str(Path.cwd())
+ORGANIZER_DIRECTORY = str(Path(CURRENT_DIRECTORY, 'Organizer', 'All'))
 
 
 class FolderManager:
 
-    folders = {}
+    created_folders = {}
 
-    def create_year_folder(self, year):
-        if year not in FolderManager.folders:
-            os.mkdir(f'{CURRENT_DIRECTORY}\\{year}')
-            FolderManager.folders[year] = []
+    @classmethod
+    def create_folder_by_year(self, year: int) -> None:
+        if year not in self.created_folders:
+            year_directory = Path(CURRENT_DIRECTORY, str(year))
+            year_directory.mkdir()
+            self.created_folders[year] = []
 
-    def create_month_folder(self, year, month):
-        self.create_year_folder(year)
-        months = FolderManager.folders.get(year)
+    @classmethod
+    def create_folder_by_month(self, year: int, month: str) -> str:
+        self.create_folder_by_year(year)
+        months = self.created_folders.get(year)
         if month not in months:
-            new_directory = f'{CURRENT_DIRECTORY}\\{year}\\{month}'
-            os.mkdir(new_directory)
-            FolderManager.folders[year] = months.append(month)
-        return new_directory
+            month_directory = Path(CURRENT_DIRECTORY, str(year), month)
+            month_directory.mkdir()
+            self.created_folders[year] = months.append(month)
+        return str(month_directory)
 
-    def move_to_folder(self, old_location, new_location):
-        shutil.move(old_location, new_location)
+    @staticmethod
+    def move_to_folder(old_image_path: str, new_image_path: str) -> None:
+        shutil.move(old_image_path, new_image_path)
 
-    def create_all_shortcut(self, image_new_directory):
-        shortcut_path = f'{CURRENT_DIRECTORY}\\Organizer\\All'
-        shell = Dispatch('WScript.Shell')
-        shortcut = shell.CreateShortCut(shortcut_path)
-        shortcut.TargetPath = image_new_directory
+    @staticmethod
+    def create_all_shortcut(new_image_path: str) -> None:
+        shortcut_path = Path(ORGANIZER_DIRECTORY)
+        shortcut = win32.Dispatch('WScript.Shell').CreateShortCut(str(shortcut_path))
+        shortcut.TargetPath = str(new_image_path)
         shortcut.save()
