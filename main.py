@@ -20,5 +20,3 @@ if __name__ == "__main__":
             media_organizer.image_path = file_location
             exifdata = media_organizer.get_image_metadata()
             media_organizer.process_image_exif(exifdata)
-        elif mime_type in video_mime_types:
-            pass
