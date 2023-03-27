@@ -34,12 +34,21 @@ class MediaOrganizer:
         self._image_path = path
 
     def get_image_metadata(self) -> Dict:
-        output: bytes = subprocess.check_output(['exiftool', '-j', self._image_path])
-        exifdata: Dict = json.loads(output.decode())[0]
-        return exifdata
+        try:
+            output: bytes = subprocess.check_output(['exiftool', '-j', self._image_path])
+            exifdata: Dict = json.loads(output.decode())[0]
+            return exifdata
+        except FileNotFoundError:
+            print("Please check that the exiftool command is installed")
+        except subprocess.CalledProcessError as e:
+            print(f"Error: {e.output.decode()}. The exiftool command returned a non-zero exit status")
 
     def parse_image_datetime(self, img_datetime: str) -> datetime:
-        return datetime.strptime(img_datetime, '%Y:%m:%d %H:%M:%S')
+        try:
+            return datetime.strptime(img_datetime, '%Y:%m:%d %H:%M:%S')
+        except ValueError:
+            print("Invalid datetime format")
+            return None
 
     def get_image_year(self, img_datetime: str) -> int:
         return self.parse_image_datetime(img_datetime).year
@@ -48,9 +57,12 @@ class MediaOrganizer:
         return self.parse_image_datetime(img_datetime).month
 
     def process_image_exif(self, img: Dict) -> None:
-        img_datetime: str = img["DateTimeOriginal"]
-        img_year: int = self.get_image_year(img_datetime)
-        img_month: str = MediaOrganizer.months[self.get_image_month(img_datetime)]
-        new_image_path: str = self.folder_manager.create_folder_by_month(img_year, img_month)
-        self.folder_manager.move_to_folder(self._image_path, new_image_path)
-        # self.folder_manager.create_all_shortcut(new_image_path)
+        try:
+            img_datetime: str = img["DateTimeOriginal"]
+            img_year: int = self.get_image_year(img_datetime)
+            img_month: str = MediaOrganizer.months[self.get_image_month(img_datetime)]
+            new_image_path: str = self.folder_manager.create_folder_by_month(img_year, img_month)
+            self.folder_manager.move_to_folder(self._image_path, new_image_path)
+            # self.folder_manager.create_all_shortcut(new_image_path)
+        except (KeyError, IndexError):
+            print("Invalid input data. Check input dictionary")
