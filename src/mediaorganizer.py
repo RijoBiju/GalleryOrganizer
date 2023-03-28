@@ -25,6 +25,7 @@ class MediaOrganizer:
         self.folder_manager = folder_manager
         self._image_path: str = ''
         self._image_name: str = ''
+        self._type: str = ''
 
     @property
     def image_path(self):
@@ -34,6 +35,14 @@ class MediaOrganizer:
     def image_path(self, path):
         self._image_path = path
         self._image_name = path.stem
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, file_type):
+        self._type = file_type
 
     def get_image_metadata(self) -> Dict:
         try:
@@ -60,7 +69,10 @@ class MediaOrganizer:
 
     def process_image_exif(self, img: Dict) -> None:
         try:
-            img_datetime: str = img["DateTimeOriginal"]
+            if self._type == 'image':
+                img_datetime: str = img["DateTimeOriginal"]
+            elif self._type == 'video':
+                img_datetime: str = img["MediaCreateDate"]
             img_year: int = self.get_image_year(img_datetime)
             img_month: str = MediaOrganizer.months[self.get_image_month(img_datetime)]
             new_image_path: str = self.folder_manager.create_folder_by_month(img_year, img_month)
@@ -68,3 +80,4 @@ class MediaOrganizer:
             self.folder_manager.create_all_shortcut(self._image_name, self._image_path, new_image_path)
         except (KeyError, IndexError):
             print("Invalid input data. Check input dictionary")
+            pass
